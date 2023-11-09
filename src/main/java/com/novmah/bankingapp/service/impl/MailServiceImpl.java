@@ -1,7 +1,8 @@
 package com.novmah.bankingapp.service.impl;
 
 import com.novmah.bankingapp.dto.EmailDetails;
-import com.novmah.bankingapp.service.EmailService;
+import com.novmah.bankingapp.exception.ResourceNotFoundException;
+import com.novmah.bankingapp.service.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,16 +18,16 @@ import java.io.File;
 import java.util.Objects;
 
 @Service
+@Async
 @RequiredArgsConstructor
 @Slf4j
-public class EmailServiceImpl implements EmailService {
+public class MailServiceImpl implements MailService {
 
     private final JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
     private String senderEmail;
 
-    @Async
     @Override
     public void sendEmailAlert(EmailDetails emailDetails) {
         MimeMessagePreparator message = mimeMessage -> {
@@ -41,7 +42,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("Mail send successfully");
         } catch (MailException e) {
             log.error("Failed to send mail: ", e);
-            throw new RuntimeException();
+            throw new ResourceNotFoundException("Exception occurred when sending mail to " + emailDetails.getRecipient());
         }
     }
 
@@ -61,7 +62,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("Mail send successfully");
         } catch (MailException e) {
             log.error("Failed to send mail: ", e);
-            throw new RuntimeException();
+            throw new ResourceNotFoundException("Exception occurred when sending mail to " + emailDetails.getRecipient());
         }
 
     }

@@ -3,23 +3,28 @@ package com.novmah.bankingapp.service.impl;
 import com.novmah.bankingapp.dto.*;
 import com.novmah.bankingapp.entity.Transaction;
 import com.novmah.bankingapp.entity.User;
+import com.novmah.bankingapp.exception.ResourceNotFoundException;
 import com.novmah.bankingapp.repository.TransactionRepository;
 import com.novmah.bankingapp.repository.UserRepository;
-import com.novmah.bankingapp.service.EmailService;
+import com.novmah.bankingapp.service.AuthService;
+import com.novmah.bankingapp.service.MailService;
 import com.novmah.bankingapp.service.TransactionService;
 import com.novmah.bankingapp.utils.AccountUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 @Slf4j
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
+    private final AuthService authService;
+    private final MailService mailService;
 
     @Override
     public BankResponse credit(CreditDebitRequest creditDebitRequest) {
@@ -31,7 +36,8 @@ public class TransactionServiceImpl implements TransactionService {
                     .accountInfo(null).build();
         }
 
-        User user = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
+        User user = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", creditDebitRequest.getAccountNumber()));
         user.setAccountBalance(user.getAccountBalance().add(creditDebitRequest.getAmount()));
         userRepository.save(user);
 
@@ -60,7 +66,8 @@ public class TransactionServiceImpl implements TransactionService {
                     .accountInfo(null).build();
         }
 
-        User user = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
+        User user = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", creditDebitRequest.getAccountNumber()));
         if (creditDebitRequest.getAmount().compareTo(user.getAccountBalance()) > 0) {
             return BankResponse.builder()
                     .responseCode(AccountUtils.INSUFFICIENT_BALANCE_CODE)
@@ -96,7 +103,7 @@ public class TransactionServiceImpl implements TransactionService {
                     .accountInfo(null).build();
         }
 
-        User sourceAccountUser = userRepository.findByAccountNumber(transferRequest.getSourceAccountNumber());
+        User sourceAccountUser = authService.getCurrentUser();
         if (transferRequest.getAmount().compareTo(sourceAccountUser.getAccountBalance()) > 0) {
             return BankResponse.builder()
                     .responseCode(AccountUtils.INSUFFICIENT_BALANCE_CODE)
@@ -111,14 +118,15 @@ public class TransactionServiceImpl implements TransactionService {
                 .accountNumber(sourceAccountUser.getAccountNumber())
                 .amount(transferRequest.getAmount())
                 .status("SUCCESS").build());
-        emailService.sendEmailAlert(EmailDetails.builder()
+        mailService.sendEmailAlert(EmailDetails.builder()
                 .recipient(sourceAccountUser.getEmail())
                 .subject("DEBIT ALERT")
                 .messageBody("The sum of " + transferRequest.getAmount() + " has been deducted from your account!\n" +
                         "Your current balance is " + sourceAccountUser.getAccountBalance())
                 .build());
 
-        User destinationAccountUser = userRepository.findByAccountNumber(transferRequest.getDestinationAccountNumber());
+        User destinationAccountUser = userRepository.findByAccountNumber(transferRequest.getDestinationAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", transferRequest.getDestinationAccountNumber()));
         destinationAccountUser.setAccountBalance(destinationAccountUser.getAccountBalance().add(transferRequest.getAmount()));
         userRepository.save(destinationAccountUser);
         transactionRepository.save(Transaction.builder()
@@ -126,7 +134,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .accountNumber(destinationAccountUser.getAccountNumber())
                 .amount(transferRequest.getAmount())
                 .status("SUCCESS").build());
-        emailService.sendEmailAlert(EmailDetails.builder()
+        mailService.sendEmailAlert(EmailDetails.builder()
                 .recipient(sourceAccountUser.getEmail())
                 .subject("CREDIT ALERT")
                 .messageBody("The sum of " + transferRequest.getAmount() + " has been sent to your account from " +

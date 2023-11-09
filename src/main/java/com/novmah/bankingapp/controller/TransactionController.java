@@ -8,6 +8,7 @@ import com.novmah.bankingapp.entity.Transaction;
 import com.novmah.bankingapp.service.StatementService;
 import com.novmah.bankingapp.service.TransactionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -26,19 +27,19 @@ public class TransactionController {
 
     @PostMapping("/credit")
     @ResponseStatus(HttpStatus.CREATED)
-    public BankResponse credit(@RequestBody CreditDebitRequest request) {
+    public BankResponse credit(@Valid @RequestBody CreditDebitRequest request) {
         return transactionService.credit(request);
     }
 
     @PostMapping("/debit")
     @ResponseStatus(HttpStatus.CREATED)
-    public BankResponse debit(@RequestBody CreditDebitRequest request) {
+    public BankResponse debit(@Valid @RequestBody CreditDebitRequest request) {
         return transactionService.debit(request);
     }
 
     @PostMapping("/transfer")
     @ResponseStatus(HttpStatus.CREATED)
-    public BankResponse transfer(@RequestBody TransferRequest request) {
+    public BankResponse transfer(@Valid @RequestBody TransferRequest request) {
         return transactionService.transfer(request);
     }
 
