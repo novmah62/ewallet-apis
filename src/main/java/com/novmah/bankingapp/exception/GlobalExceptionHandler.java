@@ -1,6 +1,6 @@
 package com.novmah.bankingapp.exception;
 
-import com.novmah.bankingapp.dto.ApiResponse;
+import com.novmah.bankingapp.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

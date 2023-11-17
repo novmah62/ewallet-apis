@@ -1,15 +1,17 @@
-package com.novmah.bankingapp.dto;
+package com.novmah.bankingapp.dto.response;
 
 import lombok.*;
+
+import java.io.Serializable;
 
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BankResponse {
+public class BankResponse implements Serializable {
 
-    private String responseCode;
+    private String responseStatus;
 
     private String responseMessage;
 

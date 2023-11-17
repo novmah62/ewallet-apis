@@ -1,6 +1,6 @@
 package com.novmah.bankingapp.service.impl;
 
-import com.novmah.bankingapp.dto.EmailDetails;
+import com.novmah.bankingapp.dto.response.EmailDetails;
 import com.novmah.bankingapp.exception.ResourceNotFoundException;
 import com.novmah.bankingapp.service.MailService;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,12 @@
 package com.novmah.bankingapp.service.impl;
 
-import com.novmah.bankingapp.dto.*;
+import com.novmah.bankingapp.dto.request.LoginRequest;
+import com.novmah.bankingapp.dto.request.RefreshTokenRequest;
+import com.novmah.bankingapp.dto.request.UserRequest;
+import com.novmah.bankingapp.dto.response.AccountInfo;
+import com.novmah.bankingapp.dto.response.AuthenticationResponse;
+import com.novmah.bankingapp.dto.response.BankResponse;
+import com.novmah.bankingapp.dto.response.EmailDetails;
 import com.novmah.bankingapp.entity.Role;
 import com.novmah.bankingapp.entity.User;
 import com.novmah.bankingapp.entity.VerificationToken;
@@ -11,8 +17,9 @@ import com.novmah.bankingapp.security.JwtProvider;
 import com.novmah.bankingapp.service.AuthService;
 import com.novmah.bankingapp.service.MailService;
 import com.novmah.bankingapp.service.RefreshTokenService;
-import com.novmah.bankingapp.utils.AccountUtils;
+import com.novmah.bankingapp.utils.BankUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +37,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final JwtProvider jwtProvider;
@@ -50,8 +58,8 @@ public class AuthServiceImpl implements AuthService {
     public BankResponse signup(UserRequest userRequest) {
         if (userRepository.existsByEmail(userRequest.getEmail())) {
             return BankResponse.builder()
-                    .responseCode(AccountUtils.ACCOUNT_EXISTS_CODE)
-                    .responseMessage(AccountUtils.ACCOUNT_EXISTS_MESSAGE)
+                    .responseStatus("ERROR")
+                    .responseMessage(BankUtils.ACCOUNT_EXISTS_MESSAGE)
                     .accountInfo(null)
                     .build();
         }
@@ -62,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
                 .gender(userRequest.getGender())
                 .address(userRequest.getAddress())
                 .stateOfOrigin(userRequest.getStateOfOrigin())
-                .accountNumber(AccountUtils.generateAccountNumber())
+                .accountNumber(BankUtils.generateAccountNumber())
                 .accountBalance(BigDecimal.ZERO)
                 .email(userRequest.getEmail())
                 .phoneNumber(userRequest.getPhoneNumber())
@@ -73,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(Role.USER).build());
 
         String token = generateVerificationToken(user);
+        log.info("VERIFICATION TOKEN: {}", token);
         mailService.sendEmailAlert(EmailDetails.builder()
                 .recipient(user.getEmail())
                 .subject("ACCOUNT CREATION")
@@ -85,8 +94,8 @@ public class AuthServiceImpl implements AuthService {
                 .build());
 
         return BankResponse.builder()
-                .responseCode(AccountUtils.ACCOUNT_CREATION_SUCCESS_CODE)
-                .responseMessage(AccountUtils.ACCOUNT_CREATION_SUCCESS_MESSAGE)
+                .responseStatus("SUCCESS")
+                .responseMessage(BankUtils.ACCOUNT_CREATION_SUCCESS_MESSAGE)
                 .accountInfo(AccountInfo.builder()
                         .accountName(user.getFirstName() + " " + user.getLastName())
                         .accountNumber(user.getAccountNumber())

@@ -1,4 +1,4 @@
-package com.novmah.bankingapp.dto;
+package com.novmah.bankingapp.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -18,8 +18,8 @@ public class LoginRequest {
     @Pattern(regexp = "^[0-9]+$", message = "Account number must contain only numeric characters")
     private String accountNumber;
 
-    @NotNull(message = "Field cannot be null")
-    @NotEmpty(message = "Field cannot be empty")
+    @NotNull(message = "Password cannot be null")
+    @NotEmpty(message = "Password cannot be empty")
     @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters long")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=])[a-zA-Z0-9@#$%^&+=]{8,20}$",
             message = "Password must contain at least one lowercase letter, one uppercase letter, " +

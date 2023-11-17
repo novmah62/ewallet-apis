@@ -4,7 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-import com.novmah.bankingapp.dto.EmailDetails;
+import com.novmah.bankingapp.dto.response.EmailDetails;
 import com.novmah.bankingapp.entity.Transaction;
 import com.novmah.bankingapp.entity.User;
 import com.novmah.bankingapp.exception.ResourceNotFoundException;
@@ -108,20 +108,20 @@ public class StatementServiceImpl implements StatementService {
         PdfPCell amount = new PdfPCell(new Phrase("AMOUNT"));
         amount.setBackgroundColor(BaseColor.GRAY);
         amount.setBorder(0);
-        PdfPCell status = new PdfPCell(new Phrase("STATUS"));
-        status.setBackgroundColor(BaseColor.GRAY);
-        status.setBorder(0);
+        PdfPCell message = new PdfPCell(new Phrase("MESSAGE"));
+        message.setBackgroundColor(BaseColor.GRAY);
+        message.setBorder(0);
 
         transactionsTable.addCell(date);
         transactionsTable.addCell(type);
         transactionsTable.addCell(amount);
-        transactionsTable.addCell(status);
+        transactionsTable.addCell(message);
 
         transactions.forEach(transaction -> {
             transactionsTable.addCell(new Phrase(transaction.getCreatedAt().toString()));
             transactionsTable.addCell(new Phrase(transaction.getTransactionType()));
             transactionsTable.addCell(new Phrase(transaction.getAmount().toString()));
-            transactionsTable.addCell(new Phrase(transaction.getStatus()));
+            transactionsTable.addCell(new Phrase(transaction.getMessage()));
         });
 
         document.add(bankInfoTable);

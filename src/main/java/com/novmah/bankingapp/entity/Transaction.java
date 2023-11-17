@@ -29,6 +29,8 @@ public class Transaction {
 
     private String status;
 
+    private String message;
+
     @CreationTimestamp
     private LocalDate createdAt;
 

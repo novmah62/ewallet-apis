@@ -1,4 +1,4 @@
-package com.novmah.bankingapp.dto;
+package com.novmah.bankingapp.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
