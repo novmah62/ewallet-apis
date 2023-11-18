@@ -11,18 +11,12 @@ public interface UserService {
 
     BankResponse balanceEnquiry(String accountNumber);
     String nameEnquiry(String accountNumber);
-
     UserResponse getUser();
-
     UserResponse updateUser(UserRequest userRequest);
-
     String changePassword(ChangePasswordRequest changePasswordRequest);
-
     String deleteUser();
-
     List<UserResponse> getALlUsers();
-
     String deleteUserByAccountNumber(String accountNumber);
-
     String clearCache();
+
 }

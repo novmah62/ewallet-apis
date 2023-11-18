@@ -3,5 +3,5 @@ docker run -d --name redis -p 6379:6379 redis
 docker exec -it redis redis-cli
 keys *
 get transactions::1
-set transactions::1 "this is a product"
+set transactions::1 "this is a transaction"
 del transactions::1

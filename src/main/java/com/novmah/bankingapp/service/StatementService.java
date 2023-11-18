@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface StatementService {
 
-    List<Transaction> generateStatement(String accountNumber, String startDate, String endDate) throws DocumentException, FileNotFoundException;
+    List<Transaction> generateStatement(String startDate, String endDate) throws DocumentException, FileNotFoundException;
 
 }

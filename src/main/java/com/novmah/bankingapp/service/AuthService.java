@@ -10,15 +10,10 @@ import com.novmah.bankingapp.entity.User;
 public interface AuthService {
 
     BankResponse signup(RegisterRequest registerRequest);
-
     User getCurrentUser();
-
     String verifyAccount(String token);
-
     AuthenticationResponse login(LoginRequest loginRequest);
-
     AuthenticationResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
-
     String logout(RefreshTokenRequest refreshTokenRequest);
 
 }

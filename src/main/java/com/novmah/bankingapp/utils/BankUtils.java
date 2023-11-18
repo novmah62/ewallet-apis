@@ -30,4 +30,5 @@ public class BankUtils {
 
         return year + randomNumber;
     }
+
 }

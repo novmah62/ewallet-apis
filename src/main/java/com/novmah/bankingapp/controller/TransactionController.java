@@ -76,10 +76,9 @@ public class TransactionController {
 
     @GetMapping("/statement")
     @ResponseStatus(HttpStatus.OK)
-    public List<Transaction> generateStatement(@RequestParam String accountNumber,
-                                               @RequestParam String startDate,
+    public List<Transaction> generateStatement(@RequestParam String startDate,
                                                @RequestParam String endDate) throws DocumentException, FileNotFoundException {
-        return statementService.generateStatement(accountNumber, startDate, endDate);
+        return statementService.generateStatement(startDate, endDate);
     }
 
     @GetMapping("/clear_cache")

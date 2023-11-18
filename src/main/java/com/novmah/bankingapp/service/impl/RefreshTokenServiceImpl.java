@@ -36,4 +36,5 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public void deleteRefreshToken(String token) {
         refreshTokenRepository.deleteByToken(token);
     }
+
 }

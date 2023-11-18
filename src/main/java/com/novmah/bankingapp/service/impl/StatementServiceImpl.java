@@ -7,9 +7,8 @@ import com.itextpdf.text.pdf.PdfWriter;
 import com.novmah.bankingapp.dto.response.EmailDetails;
 import com.novmah.bankingapp.entity.Transaction;
 import com.novmah.bankingapp.entity.User;
-import com.novmah.bankingapp.exception.ResourceNotFoundException;
 import com.novmah.bankingapp.repository.TransactionRepository;
-import com.novmah.bankingapp.repository.UserRepository;
+import com.novmah.bankingapp.service.AuthService;
 import com.novmah.bankingapp.service.MailService;
 import com.novmah.bankingapp.service.StatementService;
 import lombok.RequiredArgsConstructor;
@@ -29,19 +28,18 @@ import java.util.List;
 public class StatementServiceImpl implements StatementService {
 
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
+    private final AuthService authService;
     private final MailService mailService;
 
     private static final String FILE = "C:\\Users\\PC\\OneDrive\\Desktop\\test\\MyStatement.pdf";
 
     @Override
-    public List<Transaction> generateStatement(String accountNumber, String startDate, String endDate) throws DocumentException, FileNotFoundException {
+    public List<Transaction> generateStatement(String startDate, String endDate) throws DocumentException, FileNotFoundException {
 
         LocalDate start = LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE);
         LocalDate end = LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE);
-        User user = userRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", accountNumber));
-        List<Transaction> transactions = transactionRepository.findByAccountNumber(accountNumber).stream()
+        User user = authService.getCurrentUser();
+        List<Transaction> transactions = transactionRepository.findByAccountNumber(user.getAccountNumber()).stream()
                 .filter(transaction ->
                         transaction.getCreatedAt().isAfter(start.minusDays(1)) &&
                         transaction.getCreatedAt().isBefore(end.plusDays(1))).toList();

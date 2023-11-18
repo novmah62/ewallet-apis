@@ -41,17 +41,11 @@ import java.util.UUID;
 public class AuthServiceImpl implements AuthService {
 
     private final JwtProvider jwtProvider;
-
     private final UserRepository userRepository;
-
     private final VerificationTokenRepository verificationTokenRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthenticationManager authenticationManager;
-
     private final RefreshTokenService refreshTokenService;
-
     private final MailService mailService;
 
     @Override
