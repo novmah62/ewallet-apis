@@ -2,7 +2,7 @@ package com.novmah.bankingapp.service.impl;
 
 import com.novmah.bankingapp.dto.request.LoginRequest;
 import com.novmah.bankingapp.dto.request.RefreshTokenRequest;
-import com.novmah.bankingapp.dto.request.UserRequest;
+import com.novmah.bankingapp.dto.request.RegisterRequest;
 import com.novmah.bankingapp.dto.response.AccountInfo;
 import com.novmah.bankingapp.dto.response.AuthenticationResponse;
 import com.novmah.bankingapp.dto.response.BankResponse;
@@ -55,8 +55,8 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
 
     @Override
-    public BankResponse signup(UserRequest userRequest) {
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
+    public BankResponse signup(RegisterRequest registerRequest) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
             return BankResponse.builder()
                     .responseStatus("ERROR")
                     .responseMessage(BankUtils.ACCOUNT_EXISTS_MESSAGE)
@@ -65,20 +65,20 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = userRepository.save(User.builder()
-                .firstName(userRequest.getFirstName())
-                .lastName(userRequest.getLastName())
-                .gender(userRequest.getGender())
-                .address(userRequest.getAddress())
-                .stateOfOrigin(userRequest.getStateOfOrigin())
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
+                .gender(registerRequest.getGender())
+                .address(registerRequest.getAddress())
+                .stateOfOrigin(registerRequest.getStateOfOrigin())
                 .accountNumber(BankUtils.generateAccountNumber())
                 .accountBalance(BigDecimal.ZERO)
-                .email(userRequest.getEmail())
-                .phoneNumber(userRequest.getPhoneNumber())
-                .alternativePhoneNumber(userRequest.getAlternativePhoneNumber())
-                .password(passwordEncoder.encode(userRequest.getPassword()))
+                .email(registerRequest.getEmail())
+                .phoneNumber(registerRequest.getPhoneNumber())
+                .alternativePhoneNumber(registerRequest.getAlternativePhoneNumber())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .status("OFFLINE")
                 .enabled(false)
-                .role(Role.USER).build());
+                .role(Role.ROLE_USER).build());
 
         String token = generateVerificationToken(user);
         log.info("VERIFICATION TOKEN: {}", token);

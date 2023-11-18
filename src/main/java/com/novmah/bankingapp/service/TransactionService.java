@@ -16,4 +16,6 @@ public interface TransactionService {
     List<TransactionResponse> getTransaction(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
     List<TransactionResponse> getAllTransaction(Integer pageNumber, Integer pageSize, String sortBy, String sortDir);
 
+    String clearCache();
+
 }

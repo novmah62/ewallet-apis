@@ -2,6 +2,7 @@ package com.novmah.bankingapp.controller;
 
 import com.itextpdf.text.DocumentException;
 import com.novmah.bankingapp.dto.request.TransactionRequest;
+import com.novmah.bankingapp.dto.response.ApiResponse;
 import com.novmah.bankingapp.dto.response.BankResponse;
 import com.novmah.bankingapp.dto.response.TransactionResponse;
 import com.novmah.bankingapp.dto.response.TransferResponse;
@@ -79,6 +80,13 @@ public class TransactionController {
                                                @RequestParam String startDate,
                                                @RequestParam String endDate) throws DocumentException, FileNotFoundException {
         return statementService.generateStatement(accountNumber, startDate, endDate);
+    }
+
+    @GetMapping("/clear_cache")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse clearCache() {
+        return new ApiResponse(true, transactionService.clearCache());
     }
 
 }

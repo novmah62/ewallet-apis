@@ -1,9 +1,6 @@
 package com.novmah.bankingapp.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequest {
+public class RegisterRequest {
 
     @NotNull(message = "First name cannot be null")
     @NotEmpty(message = "First name cannot be empty")
@@ -54,5 +51,13 @@ public class UserRequest {
     @NotEmpty(message = "Phone number cannot be empty")
     @Pattern(regexp = "^[0-9]{10,12}$", message = "Phone number must be between 10 and 12 digits long")
     private String alternativePhoneNumber;
+
+    @NotNull(message = "Password cannot be null")
+    @NotEmpty(message = "Password cannot be empty")
+    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters long")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#$%^&+=])[a-zA-Z0-9@#$%^&+=]{8,20}$",
+            message = "Password must contain at least one lowercase letter, one uppercase letter, " +
+                    "one number, and one special character")
+    private String password;
 
 }

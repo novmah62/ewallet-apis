@@ -4,14 +4,12 @@ import com.novmah.bankingapp.dto.request.ChangePasswordRequest;
 import com.novmah.bankingapp.dto.request.UserRequest;
 import com.novmah.bankingapp.dto.response.ApiResponse;
 import com.novmah.bankingapp.dto.response.BankResponse;
-import com.novmah.bankingapp.dto.request.EnquiryRequest;
 import com.novmah.bankingapp.dto.response.UserResponse;
 import com.novmah.bankingapp.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,16 +22,16 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    @GetMapping("/balanceEnquiry")
+    @GetMapping("/balanceEnquiry/{accountNumber}")
     @ResponseStatus(HttpStatus.OK)
-    public BankResponse balanceEnquiry(@Valid @RequestBody EnquiryRequest request) {
-        return userService.balanceEnquiry(request);
+    public BankResponse balanceEnquiry(@PathVariable String accountNumber) {
+        return userService.balanceEnquiry(accountNumber);
     }
 
-    @GetMapping("/nameEnquiry")
+    @GetMapping("/nameEnquiry/{accountNumber}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse nameEnquiry(@Valid @RequestBody EnquiryRequest request) {
-        return new ApiResponse(true,userService.nameEnquiry(request));
+    public ApiResponse nameEnquiry(@PathVariable String accountNumber) {
+        return new ApiResponse(true,userService.nameEnquiry(accountNumber));
     }
 
     @GetMapping
@@ -49,9 +47,9 @@ public class UserController {
     }
 
     @PatchMapping
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
-        userService.changePassword(request);
-        return ResponseEntity.ok().build();
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        return new ApiResponse(true, userService.changePassword(request));
     }
 
     @DeleteMapping
@@ -62,7 +60,7 @@ public class UserController {
 
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<UserResponse> getAllUsers() {
         return userService.getALlUsers();
     }
@@ -72,6 +70,13 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ApiResponse deleteUserByAccountNumber(@PathVariable String accountNumber) {
         return new ApiResponse(true, userService.deleteUserByAccountNumber(accountNumber));
+    }
+
+    @GetMapping("/clear_cache")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ApiResponse clearCache() {
+        return new ApiResponse(true, userService.clearCache());
     }
 
 }

@@ -1,7 +1,6 @@
 package com.novmah.bankingapp.service.impl;
 
 import com.novmah.bankingapp.dto.request.ChangePasswordRequest;
-import com.novmah.bankingapp.dto.request.EnquiryRequest;
 import com.novmah.bankingapp.dto.request.UserRequest;
 import com.novmah.bankingapp.dto.response.AccountInfo;
 import com.novmah.bankingapp.dto.response.BankResponse;
@@ -34,17 +33,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "users", key = "#enquiryRequest.accountNumber")
-    public BankResponse balanceEnquiry(EnquiryRequest enquiryRequest) {
-        boolean isAccountExist = userRepository.existsByAccountNumber(enquiryRequest.getAccountNumber());
+    @Cacheable(value = "users", key = "#accountNumber")
+    public BankResponse balanceEnquiry(String accountNumber) {
+        boolean isAccountExist = userRepository.existsByAccountNumber(accountNumber);
         if (!isAccountExist) {
             return BankResponse.builder()
                     .responseStatus("ERROR")
                     .responseMessage(BankUtils.ACCOUNT_NOT_EXIST_MESSAGE)
                     .accountInfo(null).build();
         }
-        User user = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", enquiryRequest.getAccountNumber()));
+        User user = userRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", accountNumber));
         return BankResponse.builder()
                 .responseStatus("SUCCESS")
                 .responseMessage(BankUtils.ACCOUNT_FOUND_SUCCESS_MESSAGE)
@@ -56,14 +55,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "users", key = "#enquiryRequest.accountNumber + 'name'")
-    public String nameEnquiry(EnquiryRequest enquiryRequest) {
-        boolean isAccountExist = userRepository.existsByAccountNumber(enquiryRequest.getAccountNumber());
+    @Cacheable(value = "users", key = "#accountNumber + 'name'")
+    public String nameEnquiry(String accountNumber) {
+        boolean isAccountExist = userRepository.existsByAccountNumber(accountNumber);
         if (!isAccountExist) {
             return BankUtils.ACCOUNT_NOT_EXIST_MESSAGE;
         }
-        User user = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", enquiryRequest.getAccountNumber()));
+        User user = userRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", accountNumber));
         return user.getFirstName() + " " + user.getLastName();
     }
 
@@ -91,7 +90,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void changePassword(ChangePasswordRequest changePasswordRequest) {
+    public String changePassword(ChangePasswordRequest changePasswordRequest) {
         User user = authService.getCurrentUser();
         if (!passwordEncoder.matches(changePasswordRequest.getCurrentPassword(), user.getPassword())) {
             throw new ResourceNotFoundException("Wrong password");
@@ -102,11 +101,11 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(changePasswordRequest.getNewPassword()));
         userRepository.save(user);
+        return "Password changed successfully";
     }
 
     @Override
     @CacheEvict(value = "users", allEntries = true)
-    @Transactional
     public String deleteUser() {
         User user = authService.getCurrentUser();
         userRepository.deleteById(user.getId());
@@ -126,6 +125,12 @@ public class UserServiceImpl implements UserService {
     public String deleteUserByAccountNumber(String accountNumber) {
         userRepository.deleteByAccountNumber(accountNumber);
         return "deleted account: " + accountNumber;
+    }
+
+    @Override
+    @CacheEvict(value = "users", allEntries = true)
+    public String clearCache() {
+        return "Cache has been cleared";
     }
 
 }

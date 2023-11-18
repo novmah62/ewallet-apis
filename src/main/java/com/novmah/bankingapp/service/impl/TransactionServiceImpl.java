@@ -167,4 +167,10 @@ public class TransactionServiceImpl implements TransactionService {
         return mapper.mapToDto(transaction);
     }
 
+    @Override
+    @CacheEvict(value = "transactions", allEntries = true)
+    public String clearCache() {
+        return "Cache has been cleared";
+    }
+
 }
