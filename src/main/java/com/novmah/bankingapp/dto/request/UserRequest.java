@@ -22,7 +22,7 @@ public class UserRequest {
 
     @NotNull(message = "Last name cannot be null")
     @NotEmpty(message = "Last name cannot be empty")
-    @Pattern(regexp = "^[a-zA-Z]+$", message = "Last name must contain only alphabetic characters")
+    @Pattern(regexp = "^[a-zA-Z\\s]+$", message = "Last name must contain only alphabetic characters")
     private String lastName;
 
     @NotNull(message = "Gender cannot be null")
