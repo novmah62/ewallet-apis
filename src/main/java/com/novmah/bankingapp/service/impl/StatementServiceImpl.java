@@ -31,7 +31,7 @@ public class StatementServiceImpl implements StatementService {
     private final AuthService authService;
     private final MailService mailService;
 
-    private static final String FILE = "C:\\Users\\PC\\OneDrive\\Desktop\\test\\MyStatement.pdf";
+    private static final String FILE = "C:\\SharedStatements\\MyStatement.pdf";
 
     @Override
     public List<Transaction> generateStatement(String startDate, String endDate) throws DocumentException, FileNotFoundException {
