@@ -15,6 +15,8 @@ public class BankResponse implements Serializable {
 
     private String responseMessage;
 
+    private String userName;
+
     private AccountInfo accountInfo;
 
 }

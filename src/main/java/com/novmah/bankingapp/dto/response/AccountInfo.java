@@ -14,10 +14,10 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class AccountInfo implements Serializable {
 
-    private String accountName;
-
     private String accountNumber;
 
     private BigDecimal accountBalance;
+
+    private String status;
 
 }

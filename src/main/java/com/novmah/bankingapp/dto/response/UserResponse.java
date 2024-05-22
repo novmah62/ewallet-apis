@@ -23,9 +23,9 @@ public class UserResponse implements Serializable {
 
     private String stateOfOrigin;
 
-    private String accountNumber;
+//    private String accountNumber;
 
-    private BigDecimal accountBalance;
+//    private BigDecimal accountBalance;
 
     private String email;
 
@@ -33,11 +33,11 @@ public class UserResponse implements Serializable {
 
     private String alternativePhoneNumber;
 
-    private String status;
+//    private String status;
 
-    private Role role;
+//    private Role role;
 
-    private String createdAt;
+//    private String createdAt;
 
-    private String modifiedAt;
+//    private String modifiedAt;
 }

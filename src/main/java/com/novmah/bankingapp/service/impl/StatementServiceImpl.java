@@ -5,9 +5,12 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.novmah.bankingapp.dto.response.EmailDetails;
+import com.novmah.bankingapp.entity.Account;
 import com.novmah.bankingapp.entity.Transaction;
 import com.novmah.bankingapp.entity.User;
+import com.novmah.bankingapp.exception.ResourceNotFoundException;
 import com.novmah.bankingapp.repository.TransactionRepository;
+import com.novmah.bankingapp.repository.UserRepository;
 import com.novmah.bankingapp.service.AuthService;
 import com.novmah.bankingapp.service.MailService;
 import com.novmah.bankingapp.service.StatementService;
@@ -28,6 +31,7 @@ import java.util.List;
 public class StatementServiceImpl implements StatementService {
 
     private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
     private final AuthService authService;
     private final MailService mailService;
 
@@ -38,12 +42,14 @@ public class StatementServiceImpl implements StatementService {
 
         LocalDate start = LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE);
         LocalDate end = LocalDate.parse(endDate, DateTimeFormatter.ISO_DATE);
-        User user = authService.getCurrentUser();
-        List<Transaction> transactions = transactionRepository.findByAccountNumber(user.getAccountNumber()).stream()
+        Account account = authService.getCurrentAccount();
+        User user = userRepository.findByAccount_AccountNumber(account.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", account.getAccountNumber()));
+        List<Transaction> transactions = transactionRepository.findByAccountNumber(account.getAccountNumber()).stream()
                 .filter(transaction ->
                         transaction.getCreatedAt().isAfter(start.minusDays(1)) &&
                         transaction.getCreatedAt().isBefore(end.plusDays(1))).toList();
-        designStatement(user, transactions, startDate, endDate);
+        designStatement(account, user, transactions, startDate, endDate);
         mailService.sendEmailWithAttachment(EmailDetails.builder()
                 .recipient(user.getEmail())
                 .subject("STATEMENT OF ACCOUNT")
@@ -53,7 +59,7 @@ public class StatementServiceImpl implements StatementService {
         return transactions;
     }
 
-    public static void designStatement(User user, List<Transaction> transactions, String startDate, String endDate) throws FileNotFoundException, DocumentException {
+    public static void designStatement(Account account, User user, List<Transaction> transactions, String startDate, String endDate) throws FileNotFoundException, DocumentException {
 
         Rectangle statementSize = new Rectangle(PageSize.A4);
         Document document = new Document(statementSize);
@@ -78,7 +84,7 @@ public class StatementServiceImpl implements StatementService {
         start.setBorder(0);
         PdfPCell end = new PdfPCell(new Phrase("End Date: " + endDate));
         end.setBorder(0);
-        PdfPCell number = new PdfPCell(new Phrase("Account Number: " + user.getAccountNumber()));
+        PdfPCell number = new PdfPCell(new Phrase("Account Number: " + account.getAccountNumber()));
         number.setBorder(0);
         PdfPCell name = new PdfPCell(new Phrase("Customer Name: " + user.getLastName() + " " + user.getFirstName()));
         name.setBorder(0);

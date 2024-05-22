@@ -9,8 +9,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
     @Mapping(target = "fullName", expression ="java(getFullName(user.getFirstName(), user.getLastName()))")
-    @Mapping(target = "createdAt", source = "user.createdAt")
-    @Mapping(target = "modifiedAt", source = "user.modifiedAt")
     UserResponse mapToDto(User user);
 
     default String getFullName(String firstName, String lastName) {

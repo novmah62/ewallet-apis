@@ -1,7 +1,7 @@
 package com.novmah.bankingapp.service.impl;
 
 import com.novmah.bankingapp.exception.ResourceNotFoundException;
-import com.novmah.bankingapp.repository.UserRepository;
+import com.novmah.bankingapp.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,13 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        return userRepository.findByAccountNumber(username)
+        return accountRepository.findByAccountNumber(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "account number", username));
     }
 }

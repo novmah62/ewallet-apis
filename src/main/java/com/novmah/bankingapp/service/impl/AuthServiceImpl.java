@@ -7,10 +7,12 @@ import com.novmah.bankingapp.dto.response.AccountInfo;
 import com.novmah.bankingapp.dto.response.AuthenticationResponse;
 import com.novmah.bankingapp.dto.response.BankResponse;
 import com.novmah.bankingapp.dto.response.EmailDetails;
+import com.novmah.bankingapp.entity.Account;
 import com.novmah.bankingapp.entity.Role;
 import com.novmah.bankingapp.entity.User;
 import com.novmah.bankingapp.entity.VerificationToken;
 import com.novmah.bankingapp.exception.ResourceNotFoundException;
+import com.novmah.bankingapp.repository.AccountRepository;
 import com.novmah.bankingapp.repository.UserRepository;
 import com.novmah.bankingapp.repository.VerificationTokenRepository;
 import com.novmah.bankingapp.security.JwtProvider;
@@ -41,6 +43,7 @@ import java.util.UUID;
 public class AuthServiceImpl implements AuthService {
 
     private final JwtProvider jwtProvider;
+    private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private final VerificationTokenRepository verificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -58,23 +61,27 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
 
+        Account account = accountRepository.save(Account.builder()
+                .accountNumber(BankUtils.generateAccountNumber())
+                .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .accountBalance(BigDecimal.ZERO)
+                .role(Role.ROLE_USER)
+                .status("OFFLINE")
+                .enabled(false)
+                .build());
+
         User user = userRepository.save(User.builder()
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
                 .gender(registerRequest.getGender())
                 .address(registerRequest.getAddress())
                 .stateOfOrigin(registerRequest.getStateOfOrigin())
-                .accountNumber(BankUtils.generateAccountNumber())
-                .accountBalance(BigDecimal.ZERO)
                 .email(registerRequest.getEmail())
                 .phoneNumber(registerRequest.getPhoneNumber())
                 .alternativePhoneNumber(registerRequest.getAlternativePhoneNumber())
-                .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .status("OFFLINE")
-                .enabled(false)
-                .role(Role.ROLE_USER).build());
+                .build());
 
-        String token = generateVerificationToken(user);
+        String token = generateVerificationToken(account);
         log.info("VERIFICATION TOKEN: {}", token);
         mailService.sendEmailAlert(EmailDetails.builder()
                 .recipient(user.getEmail())
@@ -82,7 +89,7 @@ public class AuthServiceImpl implements AuthService {
                 .messageBody("Congratulations! Your account has been successfully created.\n" +
                         "Your Account Details: \n" +
                         "Account Name: " + user.getFirstName() + " " + user.getLastName() + "\n" +
-                        "Account Number: " + user.getAccountNumber() + "\n" +
+                        "Account Number: " + account.getAccountNumber() + "\n" +
                         "please click on the below url to activate your account : " +
                         "http://localhost:8080/api/auth/accountVerification/" + token)
                 .build());
@@ -90,28 +97,29 @@ public class AuthServiceImpl implements AuthService {
         return BankResponse.builder()
                 .responseStatus("SUCCESS")
                 .responseMessage(BankUtils.ACCOUNT_CREATION_SUCCESS_MESSAGE)
+                .userName(user.getFirstName() + " " + user.getLastName())
                 .accountInfo(AccountInfo.builder()
-                        .accountName(user.getFirstName() + " " + user.getLastName())
-                        .accountNumber(user.getAccountNumber())
-                        .accountBalance(user.getAccountBalance()).build()).build();
+                        .accountNumber(account.getAccountNumber())
+                        .accountBalance(account.getAccountBalance())
+                        .status(account.getStatus()).build()).build();
 
     }
-    public String generateVerificationToken(User user) {
+    public String generateVerificationToken(Account account) {
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
                 .token(token)
                 .expiryDate(Instant.now().plusMillis(jwtProvider.getJwtExpirationInMillis()))
-                .user(user).build();
+                .account(account).build();
         verificationTokenRepository.save(verificationToken);
         return token;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public User getCurrentUser() {
+    public Account getCurrentAccount() {
         Jwt principal = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return userRepository.findByAccountNumber(principal.getSubject())
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid user"));
+        return accountRepository.findByAccountNumber(principal.getSubject())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid account"));
     }
 
     @Override
@@ -121,11 +129,11 @@ public class AuthServiceImpl implements AuthService {
         return "Account Activated Successfully";
     }
     public void fetchUserAndEnable(VerificationToken verificationToken) {
-        String accountNumber = verificationToken.getUser().getAccountNumber();
-        User user = userRepository.findByAccountNumber(accountNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", accountNumber));
-        user.setEnabled(true);
-        userRepository.save(user);
+        String accountNumber = verificationToken.getAccount().getAccountNumber();
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "account number", accountNumber));
+        account.setEnabled(true);
+        accountRepository.save(account);
     }
 
     @Override
@@ -135,10 +143,10 @@ public class AuthServiceImpl implements AuthService {
                 loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtProvider.generateToken(authentication);
-        User user = userRepository.findByAccountNumber(loginRequest.getAccountNumber())
-                .orElseThrow(() -> new ResourceNotFoundException("User", "account number", loginRequest.getAccountNumber()));
-        user.setStatus("ACTIVE");
-        userRepository.save(user);
+        Account account = accountRepository.findByAccountNumber(loginRequest.getAccountNumber())
+                .orElseThrow(() -> new ResourceNotFoundException("Account", "account number", loginRequest.getAccountNumber()));
+        account.setStatus("ACTIVE");
+        accountRepository.save(account);
         return AuthenticationResponse.builder()
                 .authenticationToken(token)
                 .refreshToken(refreshTokenService.generateRefreshToken().getToken())
@@ -160,10 +168,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String logout(RefreshTokenRequest refreshTokenRequest) {
         refreshTokenService.deleteRefreshToken(refreshTokenRequest.getRefreshToken());
-        User user = userRepository.findByAccountNumber(refreshTokenRequest.getAccountNumber())
+        Account account = accountRepository.findByAccountNumber(refreshTokenRequest.getAccountNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "account number", refreshTokenRequest.getAccountNumber()));
-        user.setStatus("OFFLINE");
-        userRepository.save(user);
+        account.setStatus("OFFLINE");
+        accountRepository.save(account);
         return "Refresh Token Deleted Successfully!!!";
     }
 

@@ -1,6 +1,6 @@
 package com.novmah.bankingapp.security;
 
-import com.novmah.bankingapp.entity.User;
+import com.novmah.bankingapp.entity.Account;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -21,7 +21,7 @@ public class JwtProvider {
     private Long jwtExpirationInMillis;
 
     public String generateToken(Authentication authentication) {
-        User principal = (User) authentication.getPrincipal();
+        Account principal = (Account) authentication.getPrincipal();
         return generateTokenAccountNumber(principal.getAccountNumber());
     }
 
